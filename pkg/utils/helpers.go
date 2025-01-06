@@ -171,7 +171,7 @@ func RetrievePathPrefix(operation string, basePath string) string {
 		generatedPath = generatedPath[:lastSlashIndex] + "(.*)"
 	}
 
-	return basePath + strings.TrimSpace(generatedPath)
+	return strings.TrimSpace(generatedPath)
 }
 
 // GeneratePrefixMatch generates a prefix match based on the endpoint and operation
