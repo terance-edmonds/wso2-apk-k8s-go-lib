@@ -11,10 +11,10 @@ This Go library provides a framework for generating Kubernetes Gateway API-speci
 
 ## Installation
 
-To use the library, include it in your Go project by adding the following import:
+To use the library, include it in your Go project by running the following command:
 
-```go
-import "path/to/gw_artifacts"
+```bash
+go get -u "github.com/terance-edmonds/wso2-apk-k8s-go-lib"
 ```
 
 Ensure that the library and its dependencies are properly vendored in your project.
@@ -28,7 +28,7 @@ Ensure that the library and its dependencies are properly vendored in your proje
 Create an instance of the HTTPRoute generator:
 
 ```go
-import http_generator "gw_artifacts/pkg/generators/http"
+import http_generator "github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/generators/http"
 
 gen := http_generator.Generator()
 ```
@@ -38,7 +38,7 @@ gen := http_generator.Generator()
 Create an instance of the gRPC generator:
 
 ```go
-import grpc_generator "gw_artifacts/pkg/generators/grpc"
+import grpc_generator "github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/generators/grpc"
 
 gen := grpc_generator.Generator()
 ```
@@ -99,27 +99,43 @@ Examples of using the library are available in the following files:
 ### HTTPRoute Generator Functions
 
 ```go
+// GenerateHTTPRouteRules generates HTTP route rules based on the provided APK configuration, operations, and endpoint details.
 GenerateHTTPRouteRules(apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.HTTPRouteRule, error)
+// GenerateHTTPRouteRule generates a single HTTP route rule based on the provided APK configuration, operation, and endpoint details.
 GenerateHTTPRouteRule(apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.HTTPRouteRule, error)
+// GenerateAndRetrieveParentRefs generates and retrieves parent references based on the provided gateway configurations and unique ID.
 GenerateAndRetrieveParentRefs(gatewayConfig types.GatewayConfigurations, uniqueId string) []gwapiv1.ParentReference
+// GenerateHTTPRouteFilters generates HTTP route filters based on the provided APK configuration, endpoint details, operation, and endpoint type.
 GenerateHTTPRouteFilters(apkConf types.APKConf, endpointToUse types.EndpointDetails, operation types.Operation, endpointType string) ([]gwapiv1.HTTPRouteFilter, bool)
+// ExtractHTTPRouteFilter extracts HTTP route filters based on the provided APK configuration, endpoint details, operation, and operation policies.
 ExtractHTTPRouteFilter(apkConf *types.APKConf, endpoint types.EndpointDetails, operation types.Operation, operationPolicies []types.OperationPolicy, isRequest bool) ([]gwapiv1.HTTPRouteFilter, bool)
+// GetHostNames retrieves host names based on the provided APK configuration, endpoint type, and organization.
 GetHostNames(apkConf types.APKConf, endpointType string, organization types.Organization) []gwapiv1.Hostname
+// RetrieveHTTPMatches retrieves HTTP route matches based on the provided APK configuration and operation.
 RetrieveHTTPMatches(apkConf types.APKConf, operation types.Operation) ([]gwapiv1.HTTPRouteMatch, error)
+// RetrieveHTTPMatch retrieves a single HTTP route match based on the provided APK configuration and operation.
 RetrieveHTTPMatch(apkConf types.APKConf, operation types.Operation) (gwapiv1.HTTPRouteMatch, error)
+// GenerateHTTPBackEndRef generates HTTP backend references based on the provided endpoint details, operation, and endpoint type.
 GenerateHTTPBackEndRef(endpoint types.EndpointDetails, operation types.Operation, endpointType string) []gwapiv1.HTTPBackendRef
 ```
 
 ### gRPC Generator Functions
 
 ```go
-GenerateGRPCRouteRules(apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.GRPCRouteRule, error)
-GenerateGRPCRouteRule(apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.GRPCRouteRule, error)
-GenerateAndRetrieveParentRefs(gatewayConfig types.GatewayConfigurations, uniqueId string) []gwapiv1.ParentReference
-GetHostNames(apkConf types.APKConf, endpointType string, organization types.Organization) []gwapiv1.Hostname
-RetrieveGRPCMatches(operation types.Operation) []gwapiv1.GRPCRouteMatch
-RetrieveGRPCMatch(operation types.Operation) gwapiv1.GRPCRouteMatch
-GenerateGRPCBackEndRef(endpoint types.EndpointDetails, operation types.Operation) []gwapiv1.GRPCBackendRef
+// GenerateGRPCRouteRules generates gRPC route rules based on the provided APK configuration, operations, and endpoint details.
+GenerateGRPCRouteRules(apkConf, operations, endpoint, endpointType) ([]gwapiv1.GRPCRouteRule, error)
+// GenerateGRPCRouteRule generates a single gRPC route rule based on the provided APK configuration, operation, and endpoint details.
+GenerateGRPCRouteRule(apkConf, operation, endpoint, endpointType) (*gwapiv1.GRPCRouteRule, error)
+// GenerateAndRetrieveParentRefs generates and retrieves parent references based on the provided gateway configurations and unique ID.
+GenerateAndRetrieveParentRefs(gatewayConfig, uniqueId) []gwapiv1.ParentReference
+// GetHostNames retrieves host names based on the provided APK configuration, endpoint type, and organization.
+GetHostNames(apkConf, endpointType, organization) []gwapiv1.Hostname
+// RetrieveGRPCMatches retrieves gRPC route matches based on the provided operation.
+RetrieveGRPCMatches(operation) []gwapiv1.GRPCRouteMatch
+// RetrieveGRPCMatch retrieves a single gRPC route match based on the provided operation.
+RetrieveGRPCMatch(operation) gwapiv1.GRPCRouteMatch
+// GenerateGRPCBackEndRef generates gRPC backend references based on the provided endpoint details and operation.
+GenerateGRPCBackEndRef(endpoint, operation) []gwapiv1.GRPCBackendRef
 ```
 
 ### Function: `Generator`

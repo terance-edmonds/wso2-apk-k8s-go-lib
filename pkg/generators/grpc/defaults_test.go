@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"testing"
 
-	"gw_artifacts/config/types"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
 
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )

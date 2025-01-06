@@ -18,9 +18,10 @@
 package http_generator
 
 import (
-	"gw_artifacts/config/types"
-	"gw_artifacts/pkg/utils"
 	"strconv"
+
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"

@@ -20,13 +20,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"gw_artifacts/config/constants"
-	"gw_artifacts/config/types"
-	"gw_artifacts/pkg/utils"
 	"log"
 
-	example "gw_artifacts/examples"
-	grpc_generator "gw_artifacts/pkg/generators/grpc"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/constants"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
+
+	example "github.com/terance-edmonds/wso2-apk-k8s-go-lib/examples"
+	grpc_generator "github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/generators/grpc"
 )
 
 func main() {

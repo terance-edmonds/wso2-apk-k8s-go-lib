@@ -20,8 +20,9 @@ package http_generator
 import (
 	"errors"
 	"fmt"
-	"gw_artifacts/config/types"
-	"gw_artifacts/pkg/utils"
+
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
 
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )

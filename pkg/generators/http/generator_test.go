@@ -19,10 +19,11 @@ package http_generator
 
 import (
 	"fmt"
-	"gw_artifacts/config/constants"
-	"gw_artifacts/config/types"
-	"gw_artifacts/pkg/utils"
 	"testing"
+
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/constants"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
 
 	"github.com/stretchr/testify/assert"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"

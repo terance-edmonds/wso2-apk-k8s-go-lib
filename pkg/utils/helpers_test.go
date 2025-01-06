@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"testing"
 
-	"gw_artifacts/config/types"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
 
 	"github.com/stretchr/testify/assert"
 )

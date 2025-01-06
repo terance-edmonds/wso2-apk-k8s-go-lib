@@ -18,11 +18,12 @@
 package utils
 
 import (
-	"gw_artifacts/config/constants"
-	"gw_artifacts/config/types"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/constants"
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
 
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )

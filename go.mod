@@ -1,4 +1,4 @@
-module gw_artifacts
+module github.com/terance-edmonds/wso2-apk-k8s-go-lib
 
 go 1.23.3
 

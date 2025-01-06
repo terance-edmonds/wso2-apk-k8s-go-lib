@@ -18,9 +18,10 @@
 package example
 
 import (
-	"gw_artifacts/config/types"
 	"log"
 	"os"
+
+	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
 
 	"gopkg.in/yaml.v2"
 )
