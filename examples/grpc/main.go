@@ -26,7 +26,6 @@ import (
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
 
-	example "github.com/terance-edmonds/wso2-apk-k8s-go-lib/examples"
 	grpc_generator "github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/generators/grpc"
 )
 
@@ -34,7 +33,7 @@ func main() {
 	gen := grpc_generator.Generator()
 
 	// Read the configuration from the file
-	apkConf := example.ReadConfigFromFile("./examples/assets/example.apk-conf")
+	apkConf := utils.ReadAPKConf("./examples/assets/example.apk-conf")
 	organization := types.Organization{
 		Name: "wso2",
 	}

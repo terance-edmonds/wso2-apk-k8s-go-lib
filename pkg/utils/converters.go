@@ -15,18 +15,19 @@
  *
  */
 
-package example
+package utils
 
 import (
+	"encoding/json"
 	"log"
 	"os"
 
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
-
 	"gopkg.in/yaml.v2"
 )
 
-func ReadConfigFromFile(configFile string) *types.APKConf {
+// ReadAPKConf reads the APK configuration from the file
+func ReadAPKConf(configFile string) *types.APKConf {
 	var apkConf types.APKConf
 
 	yamlFile, err := os.ReadFile(configFile)
@@ -39,4 +40,24 @@ func ReadConfigFromFile(configFile string) *types.APKConf {
 	}
 
 	return &apkConf
+}
+
+// APKConfToJSON converts the APK configuration to JSON
+func APKConfToJSON(apkConf *types.APKConf) []byte {
+	jsonBytes, err := json.MarshalIndent(apkConf, "", " ")
+	if err != nil {
+		log.Fatalf("Failed to marshal APK configuration to JSON: %v", err)
+	}
+
+	return jsonBytes
+}
+
+// APKConfToYAML converts the APK configuration to YAML
+func APKConfToYAML(apkConf *types.APKConf) []byte {
+	yamlBytes, err := yaml.Marshal(apkConf)
+	if err != nil {
+		log.Fatalf("Failed to marshal APK configuration to YAML: %v", err)
+	}
+
+	return yamlBytes
 }
