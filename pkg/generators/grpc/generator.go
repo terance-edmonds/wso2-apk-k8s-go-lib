@@ -58,6 +58,10 @@ func (g *grpcRouteGenerator) GenerateGRPCRoute(apkConf types.APKConf, organizati
 		return nil, err
 	}
 	grpcRoute := gwapiv1.GRPCRoute{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "GRPCRoute",
+			APIVersion: "gateway.sigs.k8s.io/v1",
+		},
 		ObjectMeta: v1.ObjectMeta{
 			Name: uniqueId + "-" + endpointType + "-grpcroute-" + strconv.Itoa(count),
 		},

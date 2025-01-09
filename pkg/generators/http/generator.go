@@ -62,6 +62,10 @@ func (g *httpRouteGenerator) GenerateHTTPRoute(apkConf types.APKConf, organizati
 		return nil, err
 	}
 	httpRoute := gwapiv1.HTTPRoute{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "HTTPRoute",
+			APIVersion: "gateway.sigs.k8s.io/v1",
+		},
 		ObjectMeta: v1.ObjectMeta{
 			Name: uniqueId + "-" + endpointType + "-httproute-" + strconv.Itoa(count),
 		},
