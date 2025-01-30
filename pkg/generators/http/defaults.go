@@ -130,7 +130,7 @@ func (g *httpRouteGenerator) generateService(k8sArtifacts *K8sArtifacts, endpoin
 			},
 		},
 	}
-	k8sArtifacts.Services[k8sService.ObjectMeta.Name] = k8sService
+	k8sArtifacts.Services[k8sService.ObjectMeta.Name] = &k8sService
 	return k8sService
 }
 

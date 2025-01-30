@@ -27,5 +27,5 @@ type K8sArtifacts struct {
 	Version        string
 	OrganizationID string
 	HTTPRoute      *gwapiv1.HTTPRoute
-	Services       map[string]corev1.Service
+	Services       map[string]*corev1.Service
 }
