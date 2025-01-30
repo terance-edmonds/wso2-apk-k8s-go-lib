@@ -234,7 +234,7 @@ func TestGenerateHTTPRouteFilters(t *testing.T) {
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
 			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+				Endpoint: types.EndpointURL("http://employee-service:8080/api/v3"),
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -256,7 +256,7 @@ func TestGenerateHTTPRouteFilters(t *testing.T) {
 	}
 	endpointToUse := types.EndpointDetails{}
 	operation := (*apkConf.Operations)[0]
-	endpointType := "test-endpoint"
+	endpointType := constants.PRODUCTION_TYPE
 	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]*v1.Service)}
 
 	filters, hasRedirectPolicy := g.GenerateHTTPRouteFilters(&k8sArtifacts, apkConf, endpointToUse, operation, endpointType)

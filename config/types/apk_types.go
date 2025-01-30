@@ -43,6 +43,7 @@ type EndpointCertificate struct {
 type EndpointDetails struct {
 	Name         string `json:"name"`
 	URL          string `json:"url"`
+	Path         string `json:"path"`
 	Namespace    string `json:"namespace"`
 	ServiceEntry bool   `json:"serviceEntry"`
 }

@@ -258,15 +258,25 @@ func createEndpoints(endpointConfigs *types.EndpointConfigurations, endpointType
 	productionEndpointConfig := endpointConfigs.Production
 	sandboxEndpointConfig := endpointConfigs.Sandbox
 	if endpointType == constants.PRODUCTION_TYPE || productionEndpointConfig != nil {
+		var endpointUrl string
+		if url, ok := productionEndpointConfig.Endpoint.(types.EndpointURL); ok {
+			endpointUrl = string(url)
+		}
 		createdEndpoints[constants.PRODUCTION_TYPE] = types.EndpointDetails{
 			Name:         GetHost(productionEndpointConfig.Endpoint),
+			Path:         GetPath(endpointUrl),
 			URL:          ConstructURlFromK8sService(productionEndpointConfig.Endpoint),
 			ServiceEntry: isServiceEntry(productionEndpointConfig.Endpoint),
 		}
 	}
 	if endpointType == constants.SANDBOX_TYPE || sandboxEndpointConfig != nil {
+		var endpointUrl string
+		if url, ok := productionEndpointConfig.Endpoint.(types.EndpointURL); ok {
+			endpointUrl = string(url)
+		}
 		createdEndpoints[constants.SANDBOX_TYPE] = types.EndpointDetails{
 			Name:         GetHost(sandboxEndpointConfig.Endpoint),
+			Path:         GetPath(endpointUrl),
 			URL:          ConstructURlFromK8sService(sandboxEndpointConfig.Endpoint),
 			ServiceEntry: isServiceEntry(productionEndpointConfig.Endpoint),
 		}
