@@ -23,21 +23,23 @@ import (
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
 
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // HttpRouteGenerator is the interface for the HTTP route generator.
 type httpRouteGenerator struct {
-	GenerateHTTPRouteRules        func(apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.HTTPRouteRule, error)
-	GenerateHTTPRouteRule         func(apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.HTTPRouteRule, error)
+	GenerateHTTPRouteRules        func(k8sArtifacts *K8sArtifacts, apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.HTTPRouteRule, error)
+	GenerateHTTPRouteRule         func(k8sArtifacts *K8sArtifacts, apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.HTTPRouteRule, error)
 	GenerateAndRetrieveParentRefs func(gatewayConfig types.GatewayConfigurations, uniqueId string) []gwapiv1.ParentReference
-	GenerateHTTPRouteFilters      func(apkConf types.APKConf, endpointToUse types.EndpointDetails, operation types.Operation, endpointType string) ([]gwapiv1.HTTPRouteFilter, bool)
-	ExtractHTTPRouteFilter        func(apkConf *types.APKConf, endpoint types.EndpointDetails, operation types.Operation, operationPolicies []types.OperationPolicy, isRequest bool) ([]gwapiv1.HTTPRouteFilter, bool)
+	GenerateHTTPRouteFilters      func(k8sArtifacts *K8sArtifacts, apkConf types.APKConf, endpointToUse types.EndpointDetails, operation types.Operation, endpointType string) ([]gwapiv1.HTTPRouteFilter, bool)
+	ExtractHTTPRouteFilter        func(k8sArtifacts *K8sArtifacts, apkConf *types.APKConf, endpoint types.EndpointDetails, operation types.Operation, operationPolicies []types.OperationPolicy, isRequest bool) ([]gwapiv1.HTTPRouteFilter, bool)
 	GetHostNames                  func(apkConf types.APKConf, endpointType string, organization types.Organization) []gwapiv1.Hostname
 	RetrieveHTTPMatches           func(apkConf types.APKConf, operation types.Operation) ([]gwapiv1.HTTPRouteMatch, error)
 	RetrieveHTTPMatch             func(apkConf types.APKConf, operation types.Operation) (gwapiv1.HTTPRouteMatch, error)
-	GenerateHTTPBackEndRef        func(endpoint types.EndpointDetails, operation types.Operation, endpointType string) []gwapiv1.HTTPBackendRef
+	GenerateHTTPBackEndRef        func(k8sArtifacts *K8sArtifacts, endpoint types.EndpointDetails, operation types.Operation, endpointType string) []gwapiv1.HTTPBackendRef
+	GenerateService               func(k8sArtifacts *K8sArtifacts, endpoint types.EndpointDetails, operation types.Operation, endpointType string) corev1.Service
 }
 
 // Generator creates a new HTTP route generator.
@@ -52,16 +54,18 @@ func Generator() *httpRouteGenerator {
 	gen.RetrieveHTTPMatches = gen.retrieveHTTPMatches
 	gen.RetrieveHTTPMatch = gen.retrieveHTTPMatch
 	gen.GenerateHTTPBackEndRef = gen.generateHTTPBackEndRef
+	gen.GenerateService = gen.generateService
 	return gen
 }
 
 // GenerateHTTPRoute generates a HTTPRoute based on the provided configurations.
-func (g *httpRouteGenerator) GenerateHTTPRoute(apkConf types.APKConf, organization types.Organization, gatewayConfiguration types.GatewayConfigurations, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string, uniqueId string, count int) (*gwapiv1.HTTPRoute, error) {
-	httpRouteRules, err := g.GenerateHTTPRouteRules(apkConf, operations, endpoint, endpointType)
+func (g *httpRouteGenerator) GenerateHTTPRoute(apkConf types.APKConf, organization types.Organization, gatewayConfiguration types.GatewayConfigurations, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string, uniqueId string, count int) (*K8sArtifacts, error) {
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: organization.Name, Services: make(map[string]corev1.Service, 0)}
+	httpRouteRules, err := g.GenerateHTTPRouteRules(&k8sArtifacts, apkConf, operations, endpoint, endpointType)
 	if err != nil {
 		return nil, err
 	}
-	httpRoute := gwapiv1.HTTPRoute{
+	k8sArtifacts.HTTPRoute = &gwapiv1.HTTPRoute{
 		TypeMeta: v1.TypeMeta{
 			Kind:       "HTTPRoute",
 			APIVersion: "gateway.sigs.k8s.io/v1",
@@ -77,5 +81,5 @@ func (g *httpRouteGenerator) GenerateHTTPRoute(apkConf types.APKConf, organizati
 			Hostnames: g.GetHostNames(apkConf, endpointType, organization),
 		},
 	}
-	return &httpRoute, nil
+	return &k8sArtifacts, nil
 }

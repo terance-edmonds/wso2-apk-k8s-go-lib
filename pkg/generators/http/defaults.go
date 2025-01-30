@@ -23,15 +23,17 @@ import (
 
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // generateHTTPRouteRules generates a list of HTTPRouteRules based on the provided configurations.
-func (g *httpRouteGenerator) generateHTTPRouteRules(apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.HTTPRouteRule, error) {
+func (g *httpRouteGenerator) generateHTTPRouteRules(k8sArtifacts *K8sArtifacts, apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.HTTPRouteRule, error) {
 	var httpRouteRules []gwapiv1.HTTPRouteRule
 	for _, operation := range operations {
-		httpRouteRule, err := g.GenerateHTTPRouteRule(apkConf, operation, endpoint, endpointType)
+		httpRouteRule, err := g.GenerateHTTPRouteRule(k8sArtifacts, apkConf, operation, endpoint, endpointType)
 		if err != nil {
 			return nil, err
 		} else {
@@ -42,7 +44,7 @@ func (g *httpRouteGenerator) generateHTTPRouteRules(apkConf types.APKConf, opera
 }
 
 // generateRouteRule generates a route rule based on the operation and endpoint details.
-func (g *httpRouteGenerator) generateHTTPRouteRule(apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.HTTPRouteRule, error) {
+func (g *httpRouteGenerator) generateHTTPRouteRule(k8sArtifacts *K8sArtifacts, apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.HTTPRouteRule, error) {
 	var endpointToUse *types.EndpointDetails = utils.GetEndpointToUse(operation.EndpointConfigurations, endpointType)
 	if endpointToUse == nil && endpoint != nil {
 		endpointToUse = endpoint
@@ -50,7 +52,7 @@ func (g *httpRouteGenerator) generateHTTPRouteRule(apkConf types.APKConf, operat
 	if endpointToUse != nil {
 		var filters []gwapiv1.HTTPRouteFilter
 		var hasRedirectPolicy bool
-		filters, hasRedirectPolicy = g.GenerateHTTPRouteFilters(apkConf, *endpointToUse, operation, endpointType)
+		filters, hasRedirectPolicy = g.GenerateHTTPRouteFilters(k8sArtifacts, apkConf, *endpointToUse, operation, endpointType)
 		matches, err := g.RetrieveHTTPMatches(apkConf, operation)
 		if err != nil {
 			return nil, err
@@ -61,7 +63,7 @@ func (g *httpRouteGenerator) generateHTTPRouteRule(apkConf types.APKConf, operat
 			Filters: filters,
 		}
 		if !hasRedirectPolicy {
-			httpRouteRule.BackendRefs = g.GenerateHTTPBackEndRef(*endpointToUse, operation, endpointType)
+			httpRouteRule.BackendRefs = g.GenerateHTTPBackEndRef(k8sArtifacts, *endpointToUse, operation, endpointType)
 		}
 		return &httpRouteRule, nil
 	} else {
@@ -88,21 +90,52 @@ func (g *httpRouteGenerator) generateAndRetrieveParentRefs(gatewayConfig types.G
 }
 
 // generateHTTPBackEndRef generates a list of HTTPBackendRefs based on the provided configurations.
-func (g *httpRouteGenerator) generateHTTPBackEndRef(endpoint types.EndpointDetails, operation types.Operation, endpointType string) []gwapiv1.HTTPBackendRef {
+func (g *httpRouteGenerator) generateHTTPBackEndRef(k8sArtifacts *K8sArtifacts, endpoint types.EndpointDetails, operation types.Operation, endpointType string) []gwapiv1.HTTPBackendRef {
 	kind := gwapiv1.Kind("Service")
 	httpBackEndRef := gwapiv1.HTTPBackendRef{
-		BackendRef: gwapiv1.BackendRef{
-			BackendObjectReference: gwapiv1.BackendObjectReference{
-				Kind: &kind,
-				Name: gwapiv1.ObjectName(endpoint.Name),
-			},
-		},
+		BackendRef: gwapiv1.BackendRef{},
+	}
+	if endpoint.ServiceEntry {
+		portNumber := gwapiv1.PortNumber(int32(utils.GetPort(endpoint.URL)))
+		httpBackEndRef.BackendRef.BackendObjectReference = gwapiv1.BackendObjectReference{
+			Name: gwapiv1.ObjectName(utils.GetHost(types.EndpointURL(endpoint.URL))),
+			Port: &portNumber,
+		}
+	} else {
+		// Generate and append new service to artifacts
+		service := g.GenerateService(k8sArtifacts, endpoint, operation, endpointType)
+		httpBackEndRef.BackendRef.BackendObjectReference = gwapiv1.BackendObjectReference{
+			Kind: &kind,
+			Name: gwapiv1.ObjectName(service.Name),
+		}
+
 	}
 	return []gwapiv1.HTTPBackendRef{httpBackEndRef}
 }
 
+// generateService generates a K8s service based on the provided configurations.
+func (g *httpRouteGenerator) generateService(k8sArtifacts *K8sArtifacts, endpoint types.EndpointDetails, operation types.Operation, endpointType string) corev1.Service {
+	k8sService := corev1.Service{
+		ObjectMeta: v1.ObjectMeta{
+			Name: utils.GenerateServiceName(k8sArtifacts.Name, k8sArtifacts.Version, k8sArtifacts.OrganizationID, endpointType),
+		},
+		Spec: corev1.ServiceSpec{
+			Type:         "ExternalName",
+			ExternalName: utils.GetHost(types.EndpointURL(endpoint.URL)),
+			Ports: []corev1.ServicePort{
+				{
+					Port:     int32(utils.GetPort(endpoint.URL)),
+					Protocol: corev1.Protocol(utils.GetProtocol(endpoint)),
+				},
+			},
+		},
+	}
+	k8sArtifacts.Services[k8sService.ObjectMeta.Name] = k8sService
+	return k8sService
+}
+
 // generateHTTPRouteFilters generates a list of HTTPRouteFilters based on the provided configurations.
-func (g *httpRouteGenerator) generateHTTPRouteFilters(apkConf types.APKConf, endpointToUse types.EndpointDetails, operation types.Operation, endpointType string) ([]gwapiv1.HTTPRouteFilter, bool) {
+func (g *httpRouteGenerator) generateHTTPRouteFilters(k8sArtifacts *K8sArtifacts, apkConf types.APKConf, endpointToUse types.EndpointDetails, operation types.Operation, endpointType string) ([]gwapiv1.HTTPRouteFilter, bool) {
 	routeFilters := make([]gwapiv1.HTTPRouteFilter, 0)
 	var operationPoliciesToUse *types.OperationPolicies
 	hasRedirectPolicy := false
@@ -121,17 +154,17 @@ func (g *httpRouteGenerator) generateHTTPRouteFilters(apkConf types.APKConf, end
 
 		if len(requestPolicies) > 0 {
 			var requestHttpRouteFilters []gwapiv1.HTTPRouteFilter
-			requestHttpRouteFilters, hasRedirectPolicy = g.ExtractHTTPRouteFilter(&apkConf, endpointToUse, operation, requestPolicies, true)
+			requestHttpRouteFilters, hasRedirectPolicy = g.ExtractHTTPRouteFilter(k8sArtifacts, &apkConf, endpointToUse, operation, requestPolicies, true)
 			routeFilters = append(routeFilters, requestHttpRouteFilters...)
 		}
 		if len(responsePolicies) > 0 {
 			var responseHttpRouteFilters []gwapiv1.HTTPRouteFilter
-			responseHttpRouteFilters, _ = g.ExtractHTTPRouteFilter(&apkConf, endpointToUse, operation, responsePolicies, false)
+			responseHttpRouteFilters, _ = g.ExtractHTTPRouteFilter(k8sArtifacts, &apkConf, endpointToUse, operation, responsePolicies, false)
 			routeFilters = append(routeFilters, responseHttpRouteFilters...)
 		}
 	}
 	if !hasRedirectPolicy {
-		generatedPath := utils.GeneratePrefixMatch(endpointToUse, operation)
+		generatedPath := utils.GeneratePrefixMatch(endpointToUse, operation, apkConf.BasePath)
 		replacePathFilter := gwapiv1.HTTPRouteFilter{
 			Type: "URLRewrite",
 			URLRewrite: &gwapiv1.HTTPURLRewriteFilter{
@@ -147,7 +180,7 @@ func (g *httpRouteGenerator) generateHTTPRouteFilters(apkConf types.APKConf, end
 }
 
 // extractHTTPRouteFilter extracts the HTTPRouteFilters based on the provided configurations.
-func (g *httpRouteGenerator) extractHTTPRouteFilter(apkConf *types.APKConf, endpoint types.EndpointDetails, operation types.Operation, operationPolicies []types.OperationPolicy, isRequest bool) ([]gwapiv1.HTTPRouteFilter, bool) {
+func (g *httpRouteGenerator) extractHTTPRouteFilter(k8sArtifacts *K8sArtifacts, apkConf *types.APKConf, endpoint types.EndpointDetails, operation types.Operation, operationPolicies []types.OperationPolicy, isRequest bool) ([]gwapiv1.HTTPRouteFilter, bool) {
 	var httpRouteFilters = make([]gwapiv1.HTTPRouteFilter, 0)
 	var addHeaders = make([]gwapiv1.HTTPHeader, 0)
 	var setHeaders = make([]gwapiv1.HTTPHeader, 0)
@@ -179,7 +212,7 @@ func (g *httpRouteGenerator) extractHTTPRouteFilter(apkConf *types.APKConf, endp
 				}
 				port := utils.GetPort(url)
 				if port > 0 {
-					backendRef := g.GenerateHTTPBackEndRef(endpoint, operation, "")[0]
+					backendRef := g.GenerateHTTPBackEndRef(k8sArtifacts, endpoint, operation, "")[0]
 					mirrorFilter.RequestMirror = &gwapiv1.HTTPRequestMirrorFilter{
 						BackendRef: gwapiv1.BackendObjectReference{
 							Name:      backendRef.Name,

@@ -47,12 +47,18 @@ func main() {
 	endpoints := utils.GetEndpoints(*apkConf)
 	// If endpoints has production type
 	if endpoint, ok := endpoints[constants.PRODUCTION_TYPE]; ok {
-		httpRoute, err := gen.GenerateHTTPRoute(*apkConf, organization, gatewayConfig, *apkConf.Operations, &endpoint, constants.PRODUCTION_TYPE, "unique-route-id", 1)
+		k8sArtifacts, err := gen.GenerateHTTPRoute(*apkConf, organization, gatewayConfig, *apkConf.Operations, &endpoint, constants.PRODUCTION_TYPE, "unique-route-id", 1)
 		if err != nil {
 			log.Fatalf("Failed to generate http route: %v", err)
 		}
+		httpRoute := k8sArtifacts.HTTPRoute
+		services := k8sArtifacts.Services
 
-		jsonBytes, _ := json.MarshalIndent(httpRoute, "", " ")
-		fmt.Println(string(jsonBytes))
+		httpRouteJsonBytes, _ := json.MarshalIndent(httpRoute, " ", " ")
+		serviceJsonBytes, _ := json.MarshalIndent(services, " ", " ")
+		fmt.Println("HTTPRoute: ")
+		fmt.Println(string(httpRouteJsonBytes))
+		fmt.Println("Service: ")
+		fmt.Println(string(serviceJsonBytes))
 	}
 }

@@ -75,7 +75,8 @@ func TestGenerateHTTPRoute(t *testing.T) {
 	uniqueId := "test-id"
 	count := 1
 
-	httpRoute, err := g.GenerateHTTPRoute(apkConf, organization, gatewayConfiguration, operations, &endpoint, endpointType, uniqueId, count)
+	k8sArtifacts, err := g.GenerateHTTPRoute(apkConf, organization, gatewayConfiguration, operations, &endpoint, endpointType, uniqueId, count)
+	httpRoute := k8sArtifacts.HTTPRoute
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -125,8 +126,9 @@ func TestGenerateHTTPRouteRules(t *testing.T) {
 	endpoints := utils.GetEndpoints(apkConf)
 	endpoint := endpoints[constants.PRODUCTION_TYPE]
 	endpointType := "test-endpoint"
+	k8sArtifacts := K8sArtifacts{}
 
-	httpRouteRules, err := g.GenerateHTTPRouteRules(apkConf, operations, &endpoint, endpointType)
+	httpRouteRules, err := g.GenerateHTTPRouteRules(&k8sArtifacts, apkConf, operations, &endpoint, endpointType)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -171,8 +173,9 @@ func TestGenerateHTTPRouteRule(t *testing.T) {
 	endpoints := utils.GetEndpoints(apkConf)
 	endpoint := endpoints[constants.PRODUCTION_TYPE]
 	endpointType := "test-endpoint"
+	k8sArtifacts := K8sArtifacts{}
 
-	httpRouteRule, err := g.GenerateHTTPRouteRule(apkConf, operation, &endpoint, endpointType)
+	httpRouteRule, err := g.GenerateHTTPRouteRule(&k8sArtifacts, apkConf, operation, &endpoint, endpointType)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -205,9 +208,10 @@ func TestGenerateHTTPBackEndRef(t *testing.T) {
 	g := Generator()
 	endpoint := types.EndpointDetails{Name: "test-endpoint"}
 	operation := types.Operation{}
+	K8sArtifacts := K8sArtifacts{}
 	endpointType := "test-endpoint"
 
-	httpBackEndRefs := g.GenerateHTTPBackEndRef(endpoint, operation, endpointType)
+	httpBackEndRefs := g.GenerateHTTPBackEndRef(&K8sArtifacts, endpoint, operation, endpointType)
 	if len(httpBackEndRefs) == 0 {
 		t.Fatalf("Expected HTTPBackendRefs, got none")
 	}
@@ -252,8 +256,9 @@ func TestGenerateHTTPRouteFilters(t *testing.T) {
 	endpointToUse := types.EndpointDetails{}
 	operation := (*apkConf.Operations)[0]
 	endpointType := "test-endpoint"
+	k8sArtifacts := K8sArtifacts{}
 
-	filters, hasRedirectPolicy := g.GenerateHTTPRouteFilters(apkConf, endpointToUse, operation, endpointType)
+	filters, hasRedirectPolicy := g.GenerateHTTPRouteFilters(&k8sArtifacts, apkConf, endpointToUse, operation, endpointType)
 	if filters == nil {
 		t.Fatalf("Expected HTTPRouteFilters, got nil")
 	}
