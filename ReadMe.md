@@ -100,15 +100,15 @@ Examples of using the library are available in the following files:
 
 ```go
 // GenerateHTTPRouteRules generates HTTP route rules based on the provided APK configuration, operations, and endpoint details.
-GenerateHTTPRouteRules(apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.HTTPRouteRule, error)
+GenerateHTTPRouteRules(k8sArtifacts, apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.HTTPRouteRule, error)
 // GenerateHTTPRouteRule generates a single HTTP route rule based on the provided APK configuration, operation, and endpoint details.
-GenerateHTTPRouteRule(apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.HTTPRouteRule, error)
+GenerateHTTPRouteRule(k8sArtifacts, apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.HTTPRouteRule, error)
 // GenerateAndRetrieveParentRefs generates and retrieves parent references based on the provided gateway configurations and unique ID.
 GenerateAndRetrieveParentRefs(gatewayConfig types.GatewayConfigurations, uniqueId string) []gwapiv1.ParentReference
 // GenerateHTTPRouteFilters generates HTTP route filters based on the provided APK configuration, endpoint details, operation, and endpoint type.
-GenerateHTTPRouteFilters(apkConf types.APKConf, endpointToUse types.EndpointDetails, operation types.Operation, endpointType string) ([]gwapiv1.HTTPRouteFilter, bool)
+GenerateHTTPRouteFilters(k8sArtifacts, apkConf types.APKConf, endpointToUse types.EndpointDetails, operation types.Operation, endpointType string) ([]gwapiv1.HTTPRouteFilter, bool)
 // ExtractHTTPRouteFilter extracts HTTP route filters based on the provided APK configuration, endpoint details, operation, and operation policies.
-ExtractHTTPRouteFilter(apkConf *types.APKConf, endpoint types.EndpointDetails, operation types.Operation, operationPolicies []types.OperationPolicy, isRequest bool) ([]gwapiv1.HTTPRouteFilter, bool)
+ExtractHTTPRouteFilter(k8sArtifacts, apkConf *types.APKConf, endpoint types.EndpointDetails, operation types.Operation, operationPolicies []types.OperationPolicy, isRequest bool) ([]gwapiv1.HTTPRouteFilter, bool)
 // GetHostNames retrieves host names based on the provided APK configuration, endpoint type, and organization.
 GetHostNames(apkConf types.APKConf, endpointType string, organization types.Organization) []gwapiv1.Hostname
 // RetrieveHTTPMatches retrieves HTTP route matches based on the provided APK configuration and operation.
@@ -116,7 +116,9 @@ RetrieveHTTPMatches(apkConf types.APKConf, operation types.Operation) ([]gwapiv1
 // RetrieveHTTPMatch retrieves a single HTTP route match based on the provided APK configuration and operation.
 RetrieveHTTPMatch(apkConf types.APKConf, operation types.Operation) (gwapiv1.HTTPRouteMatch, error)
 // GenerateHTTPBackEndRef generates HTTP backend references based on the provided endpoint details, operation, and endpoint type.
-GenerateHTTPBackEndRef(endpoint types.EndpointDetails, operation types.Operation, endpointType string) []gwapiv1.HTTPBackendRef
+GenerateHTTPBackEndRef(k8sArtifacts, endpoint types.EndpointDetails, operation types.Operation, endpointType string) []gwapiv1.HTTPBackendRef
+// GenerateService generates a K8s service based on the provided configurations..
+GenerateService(k8sArtifacts, endpoint types.EndpointDetails, operation types.Operation, endpointType string) corev1.Service
 ```
 
 ### gRPC Generator Functions
