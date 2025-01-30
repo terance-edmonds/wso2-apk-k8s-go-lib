@@ -164,7 +164,7 @@ func (g *httpRouteGenerator) generateHTTPRouteFilters(k8sArtifacts *K8sArtifacts
 		}
 	}
 	if !hasRedirectPolicy {
-		generatedPath := utils.GeneratePrefixMatch(endpointToUse, operation, apkConf.BasePath)
+		generatedPath := utils.GeneratePrefixMatch(endpointToUse, operation, endpointToUse.Path)
 		replacePathFilter := gwapiv1.HTTPRouteFilter{
 			Type: "URLRewrite",
 			URLRewrite: &gwapiv1.HTTPURLRewriteFilter{
