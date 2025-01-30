@@ -24,6 +24,7 @@ import (
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/constants"
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/config/types"
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
+	v1 "k8s.io/api/core/v1"
 
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -71,7 +72,7 @@ func TestGenerateHTTPRoute(t *testing.T) {
 	operations := *apkConf.Operations
 	endpoints := utils.GetEndpoints(apkConf)
 	endpoint := endpoints[constants.PRODUCTION_TYPE]
-	endpointType := "test-endpoint"
+	endpointType := constants.PRODUCTION_TYPE
 	uniqueId := "test-id"
 	count := 1
 
@@ -125,8 +126,8 @@ func TestGenerateHTTPRouteRules(t *testing.T) {
 	operations := *apkConf.Operations
 	endpoints := utils.GetEndpoints(apkConf)
 	endpoint := endpoints[constants.PRODUCTION_TYPE]
-	endpointType := "test-endpoint"
-	k8sArtifacts := K8sArtifacts{}
+	endpointType := constants.PRODUCTION_TYPE
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]v1.Service)}
 
 	httpRouteRules, err := g.GenerateHTTPRouteRules(&k8sArtifacts, apkConf, operations, &endpoint, endpointType)
 	if err != nil {
@@ -172,8 +173,8 @@ func TestGenerateHTTPRouteRule(t *testing.T) {
 	operation := (*apkConf.Operations)[0]
 	endpoints := utils.GetEndpoints(apkConf)
 	endpoint := endpoints[constants.PRODUCTION_TYPE]
-	endpointType := "test-endpoint"
-	k8sArtifacts := K8sArtifacts{}
+	endpointType := constants.PRODUCTION_TYPE
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]v1.Service)}
 
 	httpRouteRule, err := g.GenerateHTTPRouteRule(&k8sArtifacts, apkConf, operation, &endpoint, endpointType)
 	if err != nil {
@@ -208,16 +209,16 @@ func TestGenerateHTTPBackEndRef(t *testing.T) {
 	g := Generator()
 	endpoint := types.EndpointDetails{Name: "test-endpoint"}
 	operation := types.Operation{}
-	K8sArtifacts := K8sArtifacts{}
-	endpointType := "test-endpoint"
+	k8sArtifacts := K8sArtifacts{Name: "api-name", Version: "v1", OrganizationID: "", Services: make(map[string]v1.Service)}
+	endpointType := constants.SANDBOX_TYPE
 
-	httpBackEndRefs := g.GenerateHTTPBackEndRef(&K8sArtifacts, endpoint, operation, endpointType)
+	httpBackEndRefs := g.GenerateHTTPBackEndRef(&k8sArtifacts, endpoint, operation, endpointType)
 	if len(httpBackEndRefs) == 0 {
 		t.Fatalf("Expected HTTPBackendRefs, got none")
 	}
 
-	expectedName := gwapiv1.ObjectName(endpoint.Name)
-	if httpBackEndRefs[0].BackendRef.Name != expectedName {
+	expectedName := utils.GenerateServiceName(k8sArtifacts.Name, k8sArtifacts.Version, k8sArtifacts.OrganizationID, endpointType)
+	if httpBackEndRefs[0].BackendRef.Name != gwapiv1.ObjectName(expectedName) {
 		t.Errorf("Expected name %s, got %s", expectedName, httpBackEndRefs[0].BackendRef.Name)
 	}
 }
@@ -256,7 +257,7 @@ func TestGenerateHTTPRouteFilters(t *testing.T) {
 	endpointToUse := types.EndpointDetails{}
 	operation := (*apkConf.Operations)[0]
 	endpointType := "test-endpoint"
-	k8sArtifacts := K8sArtifacts{}
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]v1.Service)}
 
 	filters, hasRedirectPolicy := g.GenerateHTTPRouteFilters(&k8sArtifacts, apkConf, endpointToUse, operation, endpointType)
 	if filters == nil {
@@ -308,5 +309,49 @@ func TestRetrieveHTTPMatches(t *testing.T) {
 
 	if httpRouteMatches == nil {
 		t.Fatalf("Expected HTTPRouteMatches, got nil")
+	}
+}
+
+func TestGenerateService(t *testing.T) {
+	g := Generator()
+	apkConf := types.APKConf{
+		Name:                   "EmployeeServiceAPI",
+		Version:                "3.14",
+		BasePath:               "/employees-info",
+		Type:                   "REST",
+		DefaultVersion:         false,
+		SubscriptionValidation: false,
+		EndpointConfigurations: &types.EndpointConfigurations{
+			Production: &types.EndpointConfiguration{
+				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			},
+		},
+		RateLimit: &types.RateLimit{
+			Unit:            "Minute",
+			RequestsPerUnit: 5,
+		},
+		Authentication: &[]types.AuthConfiguration{
+			{
+				AuthType: "APIKey",
+				Enabled:  true,
+			},
+		},
+		Operations: &[]types.Operation{
+			{Target: "/employees", Verb: "GET", Secured: true, Scopes: []string{}},
+			{Target: "/employee", Verb: "POST", Secured: true, Scopes: []string{}},
+			{Target: "/employee/{employeeId}", Verb: "PUT", Secured: true, Scopes: []string{}},
+			{Target: "/employee/{employeeId}", Verb: "DELETE", Secured: true, Scopes: []string{}},
+		},
+	}
+	endpoints := utils.GetEndpoints(apkConf)
+	endpoint := endpoints[constants.PRODUCTION_TYPE]
+	endpointType := constants.PRODUCTION_TYPE
+	operation := types.Operation{}
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]v1.Service)}
+
+	k8sService := g.GenerateService(&k8sArtifacts, endpoint, operation, endpointType)
+	_, ok := k8sArtifacts.Services[k8sService.ObjectMeta.Name]
+	if !ok {
+		t.Fatalf("Expected K8sService, got nil")
 	}
 }
