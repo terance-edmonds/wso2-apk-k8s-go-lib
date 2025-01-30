@@ -127,7 +127,7 @@ func TestGenerateHTTPRouteRules(t *testing.T) {
 	endpoints := utils.GetEndpoints(apkConf)
 	endpoint := endpoints[constants.PRODUCTION_TYPE]
 	endpointType := constants.PRODUCTION_TYPE
-	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]v1.Service)}
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]*v1.Service)}
 
 	httpRouteRules, err := g.GenerateHTTPRouteRules(&k8sArtifacts, apkConf, operations, &endpoint, endpointType)
 	if err != nil {
@@ -174,7 +174,7 @@ func TestGenerateHTTPRouteRule(t *testing.T) {
 	endpoints := utils.GetEndpoints(apkConf)
 	endpoint := endpoints[constants.PRODUCTION_TYPE]
 	endpointType := constants.PRODUCTION_TYPE
-	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]v1.Service)}
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]*v1.Service)}
 
 	httpRouteRule, err := g.GenerateHTTPRouteRule(&k8sArtifacts, apkConf, operation, &endpoint, endpointType)
 	if err != nil {
@@ -209,7 +209,7 @@ func TestGenerateHTTPBackEndRef(t *testing.T) {
 	g := Generator()
 	endpoint := types.EndpointDetails{Name: "test-endpoint"}
 	operation := types.Operation{}
-	k8sArtifacts := K8sArtifacts{Name: "api-name", Version: "v1", OrganizationID: "", Services: make(map[string]v1.Service)}
+	k8sArtifacts := K8sArtifacts{Name: "api-name", Version: "v1", OrganizationID: "", Services: make(map[string]*v1.Service)}
 	endpointType := constants.SANDBOX_TYPE
 
 	httpBackEndRefs := g.GenerateHTTPBackEndRef(&k8sArtifacts, endpoint, operation, endpointType)
@@ -257,7 +257,7 @@ func TestGenerateHTTPRouteFilters(t *testing.T) {
 	endpointToUse := types.EndpointDetails{}
 	operation := (*apkConf.Operations)[0]
 	endpointType := "test-endpoint"
-	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]v1.Service)}
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]*v1.Service)}
 
 	filters, hasRedirectPolicy := g.GenerateHTTPRouteFilters(&k8sArtifacts, apkConf, endpointToUse, operation, endpointType)
 	if filters == nil {
@@ -347,7 +347,7 @@ func TestGenerateService(t *testing.T) {
 	endpoint := endpoints[constants.PRODUCTION_TYPE]
 	endpointType := constants.PRODUCTION_TYPE
 	operation := types.Operation{}
-	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]v1.Service)}
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]*v1.Service)}
 
 	k8sService := g.GenerateService(&k8sArtifacts, endpoint, operation, endpointType)
 	_, ok := k8sArtifacts.Services[k8sService.ObjectMeta.Name]

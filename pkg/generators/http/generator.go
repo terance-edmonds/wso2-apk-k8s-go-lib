@@ -60,7 +60,7 @@ func Generator() *httpRouteGenerator {
 
 // GenerateHTTPRoute generates a HTTPRoute based on the provided configurations.
 func (g *httpRouteGenerator) GenerateHTTPRoute(apkConf types.APKConf, organization types.Organization, gatewayConfiguration types.GatewayConfigurations, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string, uniqueId string, count int) (*K8sArtifacts, error) {
-	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: organization.Name, Services: make(map[string]corev1.Service, 0)}
+	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: organization.Name, Services: make(map[string]*corev1.Service, 0)}
 	httpRouteRules, err := g.GenerateHTTPRouteRules(&k8sArtifacts, apkConf, operations, endpoint, endpointType)
 	if err != nil {
 		return nil, err
