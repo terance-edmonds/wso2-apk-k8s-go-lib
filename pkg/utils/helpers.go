@@ -18,6 +18,8 @@
 package utils
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -101,7 +103,12 @@ func GetPort(endpoint interface{}) int {
 // ConstructURlFromK8sService prepares the service URL from K8sService
 func ConstructURlFromK8sService(endpoint interface{}) string {
 	if k8sService, ok := endpoint.(types.K8sService); ok {
+		if k8sService.Namespace == "" {
+			k8sService.Namespace = "default"
+		}
 		return k8sService.Protocol + "://" + k8sService.Name + "." + k8sService.Namespace + ".svc.cluster.local:" + k8sService.Port
+	} else if url, ok := endpoint.(types.EndpointURL); ok {
+		return string(url)
 	} else {
 		return ""
 	}
@@ -175,7 +182,7 @@ func RetrievePathPrefix(operation string, basePath string) string {
 }
 
 // GeneratePrefixMatch generates a prefix match based on the endpoint and operation
-func GeneratePrefixMatch(endpointToUse types.EndpointDetails, operation types.Operation) string {
+func GeneratePrefixMatch(endpointToUse types.EndpointDetails, operation types.Operation, basePath string) string {
 	target := operation.Target
 	if target == "" {
 		target = "/*"
@@ -207,9 +214,9 @@ func GeneratePrefixMatch(endpointToUse types.EndpointDetails, operation types.Op
 		generatedPath = generatedPath[:lastSlashIndex] + "///" + strconv.Itoa(pathParamCount)
 	}
 	if endpointToUse.ServiceEntry {
-		return strings.TrimSpace(generatedPath)
+		generatedPath = strings.TrimSpace(generatedPath)
 	}
-	return generatedPath
+	return basePath + generatedPath
 }
 
 func GetHostNames(apkConf types.APKConf, endpointType string, organization types.Organization) []gwapiv1.Hostname {
@@ -252,15 +259,31 @@ func createEndpoints(endpointConfigs *types.EndpointConfigurations, endpointType
 	sandboxEndpointConfig := endpointConfigs.Sandbox
 	if endpointType == constants.PRODUCTION_TYPE || productionEndpointConfig != nil {
 		createdEndpoints[constants.PRODUCTION_TYPE] = types.EndpointDetails{
-			Name: GetHost(productionEndpointConfig.Endpoint),
-			URL:  ConstructURlFromK8sService(productionEndpointConfig.Endpoint),
+			Name:         GetHost(productionEndpointConfig.Endpoint),
+			URL:          ConstructURlFromK8sService(productionEndpointConfig.Endpoint),
+			ServiceEntry: isServiceEntry(productionEndpointConfig.Endpoint),
 		}
 	}
 	if endpointType == constants.SANDBOX_TYPE || sandboxEndpointConfig != nil {
 		createdEndpoints[constants.SANDBOX_TYPE] = types.EndpointDetails{
-			Name: GetHost(sandboxEndpointConfig.Endpoint),
-			URL:  ConstructURlFromK8sService(sandboxEndpointConfig.Endpoint),
+			Name:         GetHost(sandboxEndpointConfig.Endpoint),
+			URL:          ConstructURlFromK8sService(sandboxEndpointConfig.Endpoint),
+			ServiceEntry: isServiceEntry(productionEndpointConfig.Endpoint),
 		}
 	}
 	return createdEndpoints
+}
+
+// isServiceEntry checks if the endpoint is a k8s service
+func isServiceEntry(endpoint interface{}) bool {
+	if _, ok := endpoint.(types.K8sService); ok {
+		return true
+	}
+	return false
+}
+
+// GenerateServiceName generates a unique hash name
+func GenerateServiceName(apiName string, apiVersion string, organizationID string, endpointType string) string {
+	serviceHash := fmt.Sprintf("%x", sha1.Sum([]byte(organizationID+apiName+apiVersion+endpointType)))
+	return "backend-" + serviceHash
 }

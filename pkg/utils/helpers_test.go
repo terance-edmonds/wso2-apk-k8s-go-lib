@@ -135,18 +135,20 @@ func TestRetrievePathPrefix(t *testing.T) {
 func TestGeneratePrefixMatch(t *testing.T) {
 	tests := []struct {
 		name           string
+		basePath       string
 		endpointToUse  types.EndpointDetails
 		operation      types.Operation
 		expectedPrefix string
 	}{
-		{"Root operation", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/"}, "/"},
-		{"Wildcard operation", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/*"}, "\\1"},
-		{"Path with param", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/resource/{id}"}, "/resource/\\1"},
+		{"Root operation", "/anything", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/"}, "/anything/"},
+		{"Wildcard operation", "/", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/*"}, "/\\1"},
+		{"Path with param", "/anything/get", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/resource/{id}"}, "/anything/get/resource/\\1"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			prefix := GeneratePrefixMatch(tt.endpointToUse, tt.operation)
+			prefix := GeneratePrefixMatch(tt.endpointToUse, tt.operation, tt.basePath)
+			fmt.Println(prefix)
 			assert.Equal(t, tt.expectedPrefix, prefix)
 		})
 	}
