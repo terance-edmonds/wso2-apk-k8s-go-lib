@@ -98,15 +98,18 @@ func (g *httpRouteGenerator) generateHTTPBackEndRef(k8sArtifacts *K8sArtifacts, 
 	if endpoint.ServiceEntry {
 		portNumber := gwapiv1.PortNumber(int32(utils.GetPort(endpoint.URL)))
 		httpBackEndRef.BackendRef.BackendObjectReference = gwapiv1.BackendObjectReference{
+			Kind: &kind,
 			Name: gwapiv1.ObjectName(utils.GetHost(types.EndpointURL(endpoint.URL))),
 			Port: &portNumber,
 		}
 	} else {
 		// Generate and append new service to artifacts
 		service := g.GenerateService(k8sArtifacts, endpoint, operation, endpointType)
+		portNumber := gwapiv1.PortNumber(80)
 		httpBackEndRef.BackendRef.BackendObjectReference = gwapiv1.BackendObjectReference{
 			Kind: &kind,
 			Name: gwapiv1.ObjectName(service.Name),
+			Port: &portNumber,
 		}
 
 	}
@@ -124,8 +127,8 @@ func (g *httpRouteGenerator) generateService(k8sArtifacts *K8sArtifacts, endpoin
 			ExternalName: utils.GetHost(types.EndpointURL(endpoint.URL)),
 			Ports: []corev1.ServicePort{
 				{
-					Port:     int32(utils.GetPort(endpoint.URL)),
-					Protocol: corev1.Protocol(utils.GetProtocol(endpoint)),
+					Port:     int32(80),
+					Protocol: "TCP",
 				},
 			},
 		},
