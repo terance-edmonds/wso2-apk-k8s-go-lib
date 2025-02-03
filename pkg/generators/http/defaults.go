@@ -167,8 +167,7 @@ func (g *httpRouteGenerator) generateHTTPRouteFilters(k8sArtifacts *K8sArtifacts
 		}
 	}
 	if !hasRedirectPolicy {
-		basePath := k8sArtifacts.Context + "/" + k8sArtifacts.Version + endpointToUse.Path
-		generatedPath := utils.GeneratePrefixMatch(endpointToUse, operation, basePath)
+		generatedPath := utils.GeneratePrefixMatch(endpointToUse, operation, endpointToUse.Path)
 		replacePathFilter := gwapiv1.HTTPRouteFilter{
 			Type: "URLRewrite",
 			URLRewrite: &gwapiv1.HTTPURLRewriteFilter{
@@ -303,7 +302,8 @@ func (g *httpRouteGenerator) retrieveHTTPMatch(apkConf types.APKConf, operation 
 	if operation.Target != "" {
 		operationTarget = operation.Target
 	}
-	pathValue := utils.RetrievePathPrefix(operationTarget, apkConf.BasePath)
+	basePath := utils.GeneratePath(apkConf.BasePath, apkConf.Version)
+	pathValue := utils.RetrievePathPrefix(operationTarget, basePath)
 	httpRouteMatch := gwapiv1.HTTPRouteMatch{
 		Method: &method,
 		Path: &gwapiv1.HTTPPathMatch{
