@@ -15,18 +15,24 @@
  *
  */
 
-package http_generator
+package utils
 
 import (
-	corev1 "k8s.io/api/core/v1"
-	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	"strings"
 )
 
-type K8sArtifacts struct {
-	Name           string
-	Version        string
-	Context        string
-	OrganizationID string
-	HTTPRoute      *gwapiv1.HTTPRoute
-	Services       map[string]*corev1.Service
+// ExtractPath removes any leading or ending forward slashes
+func ExtractPath(path string) string {
+	return strings.Trim(path, "/")
+}
+
+// GeneratePath creates a path by joining multiple paths
+func GeneratePath(paths ...string) string {
+	var cleanedPaths []string
+	for _, p := range paths {
+		if trimmed := ExtractPath(p); trimmed != "" {
+			cleanedPaths = append(cleanedPaths, trimmed)
+		}
+	}
+	return "/" + strings.Join(cleanedPaths, "/")
 }
