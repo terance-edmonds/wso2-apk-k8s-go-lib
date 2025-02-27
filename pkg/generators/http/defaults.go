@@ -305,11 +305,13 @@ func (g *httpRouteGenerator) retrieveHTTPMatch(apkConf types.APKConf, operation 
 	basePath := utils.GeneratePath(apkConf.BasePath, apkConf.Version)
 	pathValue := utils.RetrievePathPrefix(operationTarget, basePath)
 	httpRouteMatch := gwapiv1.HTTPRouteMatch{
-		Method: &method,
 		Path: &gwapiv1.HTTPPathMatch{
 			Type:  &pathType,
 			Value: &pathValue,
 		},
+	}
+	if method != "" {
+		httpRouteMatch.Method = &method
 	}
 	return httpRouteMatch, nil
 }

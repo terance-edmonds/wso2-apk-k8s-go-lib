@@ -140,9 +140,7 @@ type OperationPolicy struct {
 }
 
 // Parameter interface is used to define the type of parameters that can be used in an operation policy.
-type Parameter interface {
-	isParameter()
-}
+type Parameter interface{}
 
 // RedirectPolicy contains the information for redirect request policies
 type RedirectPolicy struct {
@@ -150,22 +148,16 @@ type RedirectPolicy struct {
 	StatusCode int    `json:"statusCode,omitempty" yaml:"statusCode,omitempty"`
 }
 
-func (u RedirectPolicy) isParameter() {}
-
 // URLList contains the urls for mirror policies
 type URLList struct {
 	URLs []string `json:"urls,omitempty" yaml:"urls,omitempty"`
 }
-
-func (u URLList) isParameter() {}
 
 // Header contains the information for header modification
 type Header struct {
 	HeaderName  string `yaml:"headerName"`
 	HeaderValue string `yaml:"headerValue,omitempty"`
 }
-
-func (h Header) isParameter() {}
 
 // InterceptorService holds configuration details for configuring interceptor
 // for particular API requests or responses.
@@ -179,8 +171,6 @@ type InterceptorService struct {
 	TLSSecretKey    string `yaml:"tlsSecretKey,omitempty"`
 }
 
-func (s InterceptorService) isParameter() {}
-
 // BackendJWT holds configuration details for configuring JWT for backend
 type BackendJWT struct {
 	Encoding         string `yaml:"encoding,omitempty"`
@@ -188,8 +178,6 @@ type BackendJWT struct {
 	SigningAlgorithm string `yaml:"signingAlgorithm,omitempty"`
 	TokenTTL         int    `yaml:"tokenTTL,omitempty"`
 }
-
-func (j BackendJWT) isParameter() {}
 
 // OperationPolicies organizes request and response policies for an API operation.
 type OperationPolicies struct {
