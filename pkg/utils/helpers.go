@@ -155,7 +155,7 @@ func RetrievePathPrefix(operation string, basePath string) string {
 	generatedPath := ""
 
 	if operation == "/*" {
-		return "(.*)"
+		return "/(.*)"
 	} else if operation == "/" {
 		return "/"
 	}
