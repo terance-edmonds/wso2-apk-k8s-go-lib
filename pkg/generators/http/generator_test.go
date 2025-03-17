@@ -39,8 +39,10 @@ func TestGenerator(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{

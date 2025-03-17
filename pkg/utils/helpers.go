@@ -184,7 +184,7 @@ func RetrievePathPrefix(operation string, basePath string) string {
 }
 
 // GeneratePrefixMatch generates a prefix match based on the endpoint and operation
-func GeneratePrefixMatch(endpointToUse types.EndpointDetails, operation types.Operation, basePath string) string {
+func GeneratePrefixMatch(endpointToUse []types.EndpointDetails, operation types.Operation, basePath string) string {
 	target := operation.Target
 	if target == "" {
 		target = "/*"
@@ -215,7 +215,7 @@ func GeneratePrefixMatch(endpointToUse types.EndpointDetails, operation types.Op
 		lastSlashIndex := strings.LastIndex(generatedPath, "/")
 		generatedPath = generatedPath[:lastSlashIndex] + "///" + strconv.Itoa(pathParamCount)
 	}
-	if endpointToUse.ServiceEntry {
+	if len(endpointToUse) > 0 && endpointToUse[0].ServiceEntry {
 		generatedPath = strings.TrimSpace(generatedPath)
 	}
 	return basePath + generatedPath
@@ -233,8 +233,8 @@ func GetHostNames(apkConf types.APKConf, endpointType string, organization types
 }
 
 // GetEndpoints retrieves the endpoint details from the provided APK configuration.
-func GetEndpoints(apkConf types.APKConf) map[string]types.EndpointDetails {
-	createdEndpoints := make(map[string]types.EndpointDetails)
+func GetEndpoints(apkConf types.APKConf) map[string][]types.EndpointDetails {
+	createdEndpoints := make(map[string][]types.EndpointDetails)
 	endpointConfigs := apkConf.EndpointConfigurations
 	if endpointConfigs != nil {
 		createdEndpoints = createEndpoints(endpointConfigs, "")
@@ -243,7 +243,7 @@ func GetEndpoints(apkConf types.APKConf) map[string]types.EndpointDetails {
 }
 
 // GetEndpointToUse returns the endpoint details based on the endpoint configurations and type.
-func GetEndpointToUse(endpointConfigs *types.EndpointConfigurations, endpointType string) *types.EndpointDetails {
+func GetEndpointToUse(endpointConfigs *types.EndpointConfigurations, endpointType string) *[]types.EndpointDetails {
 	if endpointConfigs != nil {
 		operationLevelEndpoint := createEndpoints(endpointConfigs, endpointType)
 		if _, ok := operationLevelEndpoint[endpointType]; ok {
@@ -255,32 +255,44 @@ func GetEndpointToUse(endpointConfigs *types.EndpointConfigurations, endpointTyp
 }
 
 // createEndpoints creates a map of endpoint details based on the provided configurations and endpoint type.
-func createEndpoints(endpointConfigs *types.EndpointConfigurations, endpointType string) map[string]types.EndpointDetails {
-	createdEndpoints := make(map[string]types.EndpointDetails)
-	productionEndpointConfig := endpointConfigs.Production
-	sandboxEndpointConfig := endpointConfigs.Sandbox
-	if endpointType == constants.PRODUCTION_TYPE || productionEndpointConfig != nil {
-		var endpointUrl string
-		if url, ok := productionEndpointConfig.Endpoint.(types.EndpointURL); ok {
-			endpointUrl = string(url)
+func createEndpoints(endpointConfigs *types.EndpointConfigurations, endpointType string) map[string][]types.EndpointDetails {
+	createdEndpoints := make(map[string][]types.EndpointDetails)
+	productionEndpointConfigs := endpointConfigs.Production
+	sandboxEndpointConfigs := endpointConfigs.Sandbox
+	if endpointType == constants.PRODUCTION_TYPE || productionEndpointConfigs != nil {
+		if createdEndpoints[constants.PRODUCTION_TYPE] == nil {
+			createdEndpoints[constants.PRODUCTION_TYPE] = make([]types.EndpointDetails, 0)
 		}
-		createdEndpoints[constants.PRODUCTION_TYPE] = types.EndpointDetails{
-			Name:         GetHost(productionEndpointConfig.Endpoint),
-			Path:         GetPath(endpointUrl),
-			URL:          ConstructURlFromK8sService(productionEndpointConfig.Endpoint),
-			ServiceEntry: isServiceEntry(productionEndpointConfig.Endpoint),
+
+		for _, productionEndpointConfig := range *productionEndpointConfigs {
+			var endpointUrl string
+			if url, ok := productionEndpointConfig.Endpoint.(types.EndpointURL); ok {
+				endpointUrl = string(url)
+			}
+			createdEndpoints[constants.PRODUCTION_TYPE] = append(createdEndpoints[constants.PRODUCTION_TYPE], types.EndpointDetails{
+				Name:         GetHost(productionEndpointConfig.Endpoint),
+				Path:         GetPath(endpointUrl),
+				URL:          ConstructURlFromK8sService(productionEndpointConfig.Endpoint),
+				ServiceEntry: isServiceEntry(productionEndpointConfig.Endpoint),
+			})
 		}
 	}
-	if endpointType == constants.SANDBOX_TYPE || sandboxEndpointConfig != nil {
-		var endpointUrl string
-		if url, ok := productionEndpointConfig.Endpoint.(types.EndpointURL); ok {
-			endpointUrl = string(url)
+	if endpointType == constants.SANDBOX_TYPE || sandboxEndpointConfigs != nil {
+		if createdEndpoints[constants.SANDBOX_TYPE] == nil {
+			createdEndpoints[constants.SANDBOX_TYPE] = make([]types.EndpointDetails, 0)
 		}
-		createdEndpoints[constants.SANDBOX_TYPE] = types.EndpointDetails{
-			Name:         GetHost(sandboxEndpointConfig.Endpoint),
-			Path:         GetPath(endpointUrl),
-			URL:          ConstructURlFromK8sService(sandboxEndpointConfig.Endpoint),
-			ServiceEntry: isServiceEntry(productionEndpointConfig.Endpoint),
+		for _, sandboxEndpointConfig := range *sandboxEndpointConfigs {
+			var endpointUrl string
+			if url, ok := sandboxEndpointConfig.Endpoint.(types.EndpointURL); ok {
+				endpointUrl = string(url)
+			}
+
+			createdEndpoints[constants.SANDBOX_TYPE] = append(createdEndpoints[constants.SANDBOX_TYPE], types.EndpointDetails{
+				Name:         GetHost(sandboxEndpointConfig.Endpoint),
+				Path:         GetPath(endpointUrl),
+				URL:          ConstructURlFromK8sService(sandboxEndpointConfig.Endpoint),
+				ServiceEntry: isServiceEntry(sandboxEndpointConfig.Endpoint),
+			})
 		}
 	}
 	return createdEndpoints

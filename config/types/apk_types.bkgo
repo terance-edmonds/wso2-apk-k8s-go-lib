@@ -125,15 +125,10 @@ type AuthConfiguration struct {
 	Audience          []string      `yaml:"audience,omitempty"`
 }
 
-// Endpoint represents an API endpoint.
-// type Endpoint struct {
-// 	Endpoint string `yaml:"endpoint,omitempty"`
-// }
-
 // EndpointConfigurations holds production and sandbox endpoints.
 type EndpointConfigurations struct {
-	Production *[]EndpointConfiguration `yaml:"production,omitempty"`
-	Sandbox    *[]EndpointConfiguration `yaml:"sandbox,omitempty"`
+	Production *EndpointConfiguration `yaml:"production,omitempty"`
+	Sandbox    *EndpointConfiguration `yaml:"sandbox,omitempty"`
 }
 
 // OperationPolicy defines policies, including interceptor parameters, for API operations.
@@ -146,6 +141,43 @@ type OperationPolicy struct {
 
 // Parameter interface is used to define the type of parameters that can be used in an operation policy.
 type Parameter interface{}
+
+// RedirectPolicy contains the information for redirect request policies
+type RedirectPolicy struct {
+	URL        string `json:"url,omitempty" yaml:"url,omitempty"`
+	StatusCode int    `json:"statusCode,omitempty" yaml:"statusCode,omitempty"`
+}
+
+// URLList contains the urls for mirror policies
+type URLList struct {
+	URLs []string `json:"urls,omitempty" yaml:"urls,omitempty"`
+}
+
+// Header contains the information for header modification
+type Header struct {
+	HeaderName  string `yaml:"headerName"`
+	HeaderValue string `yaml:"headerValue,omitempty"`
+}
+
+// InterceptorService holds configuration details for configuring interceptor
+// for particular API requests or responses.
+type InterceptorService struct {
+	BackendURL      string `yaml:"backendUrl,omitempty"`
+	HeadersEnabled  bool   `yaml:"headersEnabled,omitempty"`
+	BodyEnabled     bool   `yaml:"bodyEnabled,omitempty"`
+	TrailersEnabled bool   `yaml:"trailersEnabled,omitempty"`
+	ContextEnabled  bool   `yaml:"contextEnabled,omitempty"`
+	TLSSecretName   string `yaml:"tlsSecretName,omitempty"`
+	TLSSecretKey    string `yaml:"tlsSecretKey,omitempty"`
+}
+
+// BackendJWT holds configuration details for configuring JWT for backend
+type BackendJWT struct {
+	Encoding         string `yaml:"encoding,omitempty"`
+	Header           string `yaml:"header,omitempty"`
+	SigningAlgorithm string `yaml:"signingAlgorithm,omitempty"`
+	TokenTTL         int    `yaml:"tokenTTL,omitempty"`
+}
 
 // OperationPolicies organizes request and response policies for an API operation.
 type OperationPolicies struct {
@@ -182,6 +214,36 @@ type AIProvider struct {
 	APIVersion string `yaml:"apiVersion,omitempty"`
 }
 
+// CORSConfiguration represents the CORS (Cross-Origin Resource Sharing) configuration for an API.
+type CORSConfiguration struct {
+	CORSConfigurationEnabled      bool     `yaml:"corsConfigurationEnabled"`
+	AccessControlAllowOrigins     []string `yaml:"accessControlAllowOrigins"`
+	AccessControlAllowCredentials bool     `yaml:"accessControlAllowCredentials"`
+	AccessControlAllowHeaders     []string `yaml:"accessControlAllowHeaders"`
+	AccessControlAllowMethods     []string `yaml:"accessControlAllowMethods"`
+}
+
+// API represents an main API type definition
+type APKConf struct {
+	Name                   string                  `yaml:"name,omitempty"`
+	ID                     string                  `yaml:"id,omitempty"`
+	Version                string                  `yaml:"version,omitempty"`
+	BasePath               string                  `yaml:"basePath,omitempty"`
+	Type                   string                  `yaml:"type,omitempty"`
+	Environment            string                  `yaml:"environment,omitempty"`
+	DefaultVersion         bool                    `yaml:"defaultVersion,omitempty"`
+	DefinitionPath         string                  `yaml:"definitionPath,omitempty"`
+	EndpointConfigurations *EndpointConfigurations `yaml:"endpointConfigurations,omitempty"`
+	Operations             *[]Operation            `yaml:"operations,omitempty"`
+	Authentication         *[]AuthConfiguration    `yaml:"authentication,omitempty"`
+	CorsConfig             *CORSConfiguration      `yaml:"corsConfiguration,omitempty"`
+	AdditionalProperties   *[]AdditionalProperty   `yaml:"additionalProperties,omitempty"`
+	SubscriptionValidation bool                    `yaml:"subscriptionValidation,omitempty"`
+	RateLimit              *RateLimit              `yaml:"rateLimit,omitempty"`
+	APIPolicies            *OperationPolicies      `yaml:"apiPolicies,omitempty"`
+	AIProvider             *AIProvider             `yaml:"aiProvider,omitempty"`
+}
+
 // Organization represents an organization configuration.
 type Organization struct {
 	UUID                     string                 `yaml:"uuid"`
@@ -197,51 +259,4 @@ type Organization struct {
 type OrganizationProperty struct {
 	Name  string `yaml:"name"`
 	Value string `yaml:"value"`
-}
-
-// CORSConfiguration represents the CORS (Cross-Origin Resource Sharing) configuration for an API.
-type CORSConfiguration struct {
-	CORSConfigurationEnabled      bool     `yaml:"corsConfigurationEnabled"`
-	AccessControlAllowOrigins     []string `yaml:"accessControlAllowOrigins"`
-	AccessControlAllowCredentials bool     `yaml:"accessControlAllowCredentials"`
-	AccessControlAllowHeaders     []string `yaml:"accessControlAllowHeaders"`
-	AccessControlAllowMethods     []string `yaml:"accessControlAllowMethods"`
-}
-
-// RedirectPolicy contains the information for redirect request policies
-type RedirectPolicy struct {
-	URL        string `json:"url,omitempty" yaml:"url,omitempty"`
-	StatusCode int    `json:"statusCode,omitempty" yaml:"statusCode,omitempty"`
-}
-
-// URLList contains the urls for mirror policies
-type URLList struct {
-	URLs []string `json:"urls,omitempty" yaml:"urls,omitempty"`
-}
-
-// Header contains the information for header modification
-type Header struct {
-	HeaderName  string `yaml:"headerName"`
-	HeaderValue string `yaml:"headerValue,omitempty"`
-}
-
-// API represents an main API type definition
-type APKConf struct {
-	Name                   string                  `yaml:"name,omitempty"`
-	ID                     string                  `yaml:"id,omitempty"`
-	Version                string                  `yaml:"version,omitempty"`
-	BasePath               string                  `yaml:"basePath,omitempty"`
-	Type                   string                  `yaml:"type,omitempty"`
-	Environment            string                  `yaml:"environment,omitempty"`
-	DefaultVersion         bool                    `yaml:"defaultVersion"`
-	DefinitionPath         string                  `yaml:"definitionPath,omitempty"`
-	EndpointConfigurations *EndpointConfigurations `yaml:"endpointConfigurations,omitempty"`
-	Operations             *[]Operation            `yaml:"operations,omitempty"`
-	Authentication         *[]AuthConfiguration    `yaml:"authentication,omitempty"`
-	CorsConfig             *CORSConfiguration      `yaml:"corsConfiguration,omitempty"`
-	AdditionalProperties   *[]AdditionalProperty   `yaml:"additionalProperties,omitempty"`
-	SubscriptionValidation bool                    `yaml:"subscriptionValidation,omitempty"`
-	RateLimit              *RateLimit              `yaml:"rateLimit,omitempty"`
-	APIPolicies            *OperationPolicies      `yaml:"apiPolicies,omitempty"`
-	AIProvider             *AIProvider             `yaml:"aiProvider,omitempty"`
 }

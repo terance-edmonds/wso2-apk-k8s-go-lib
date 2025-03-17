@@ -136,13 +136,13 @@ func TestGeneratePrefixMatch(t *testing.T) {
 	tests := []struct {
 		name           string
 		basePath       string
-		endpointToUse  types.EndpointDetails
+		endpointToUse  []types.EndpointDetails
 		operation      types.Operation
 		expectedPrefix string
 	}{
-		{"Root operation", "/anything", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/"}, "/anything/"},
-		{"Wildcard operation", "/", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/*"}, "/\\1"},
-		{"Path with param", "/anything/get", types.EndpointDetails{ServiceEntry: false}, types.Operation{Target: "/resource/{id}"}, "/anything/get/resource/\\1"},
+		{"Root operation", "/anything", []types.EndpointDetails{types.EndpointDetails{ServiceEntry: false}}, types.Operation{Target: "/"}, "/anything/"},
+		{"Wildcard operation", "/", []types.EndpointDetails{types.EndpointDetails{ServiceEntry: false}}, types.Operation{Target: "/*"}, "/\\1"},
+		{"Path with param", "/anything/get", []types.EndpointDetails{types.EndpointDetails{ServiceEntry: false}}, types.Operation{Target: "/resource/{id}"}, "/anything/get/resource/\\1"},
 	}
 
 	for _, tt := range tests {

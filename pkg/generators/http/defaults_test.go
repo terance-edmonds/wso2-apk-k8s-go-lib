@@ -39,8 +39,10 @@ func TestGenerateHTTPRoute(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -102,8 +104,10 @@ func TestGenerateHTTPRouteRules(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -149,8 +153,10 @@ func TestGenerateHTTPRouteRule(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -207,7 +213,7 @@ func TestGenerateAndRetrieveParentRefs(t *testing.T) {
 
 func TestGenerateHTTPBackEndRef(t *testing.T) {
 	g := Generator()
-	endpoint := types.EndpointDetails{Name: "test-endpoint"}
+	endpoint := []types.EndpointDetails{types.EndpointDetails{Name: "test-endpoint"}}
 	operation := types.Operation{}
 	k8sArtifacts := K8sArtifacts{Name: "api-name", Version: "v1", OrganizationID: "", Services: make(map[string]*v1.Service)}
 	endpointType := constants.SANDBOX_TYPE
@@ -233,8 +239,10 @@ func TestGenerateHTTPRouteFilters(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080/api/v3"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080/api/v3"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -254,7 +262,7 @@ func TestGenerateHTTPRouteFilters(t *testing.T) {
 			{Target: "/employee/{employeeId}", Verb: "DELETE", Secured: true, Scopes: []string{}},
 		},
 	}
-	endpointToUse := types.EndpointDetails{}
+	endpointToUse := []types.EndpointDetails{}
 	operation := (*apkConf.Operations)[0]
 	endpointType := constants.PRODUCTION_TYPE
 	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]*v1.Service)}
@@ -279,8 +287,10 @@ func TestRetrieveHTTPMatches(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -322,8 +332,10 @@ func TestGenerateService(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -349,7 +361,7 @@ func TestGenerateService(t *testing.T) {
 	operation := types.Operation{}
 	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]*v1.Service)}
 
-	k8sService := g.GenerateService(&k8sArtifacts, endpoint, operation, endpointType)
+	k8sService := g.GenerateService(&k8sArtifacts, endpoint[0], operation, endpointType)
 	_, ok := k8sArtifacts.Services[k8sService.ObjectMeta.Name]
 	if !ok {
 		t.Fatalf("Expected K8sService, got nil")

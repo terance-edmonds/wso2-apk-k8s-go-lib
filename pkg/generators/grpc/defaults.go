@@ -27,7 +27,7 @@ import (
 )
 
 // generateGRPCRouteRules generates a list of GRPCRouteRules based on the provided configurations.
-func (g *grpcRouteGenerator) generateGRPCRouteRules(apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.GRPCRouteRule, error) {
+func (g *grpcRouteGenerator) generateGRPCRouteRules(apkConf types.APKConf, operations []types.Operation, endpoint *[]types.EndpointDetails, endpointType string) ([]gwapiv1.GRPCRouteRule, error) {
 	var grpcRouteRules []gwapiv1.GRPCRouteRule
 	for _, operation := range operations {
 		grpcRouteRule, err := g.GenerateGRPCRouteRule(apkConf, operation, endpoint, endpointType)
@@ -41,8 +41,8 @@ func (g *grpcRouteGenerator) generateGRPCRouteRules(apkConf types.APKConf, opera
 }
 
 // generateRouteRule generates a route rule based on the operation and endpoint details.
-func (g *grpcRouteGenerator) generateGRPCRouteRule(apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.GRPCRouteRule, error) {
-	var endpointToUse *types.EndpointDetails = utils.GetEndpointToUse(operation.EndpointConfigurations, endpointType)
+func (g *grpcRouteGenerator) generateGRPCRouteRule(apkConf types.APKConf, operation types.Operation, endpoint *[]types.EndpointDetails, endpointType string) (*gwapiv1.GRPCRouteRule, error) {
+	var endpointToUse *[]types.EndpointDetails = utils.GetEndpointToUse(operation.EndpointConfigurations, endpointType)
 	if endpointToUse == nil && endpoint != nil {
 		endpointToUse = endpoint
 	}
@@ -76,17 +76,22 @@ func (g *grpcRouteGenerator) generateAndRetrieveParentRefs(gatewayConfig types.G
 }
 
 // generateGRPCBackEndRef generates a list of GRPCBackendRefs based on the provided configurations.
-func (g *grpcRouteGenerator) generateGRPCBackEndRef(endpoint types.EndpointDetails, operation types.Operation) []gwapiv1.GRPCBackendRef {
+func (g *grpcRouteGenerator) generateGRPCBackEndRef(endpoints []types.EndpointDetails, operation types.Operation) []gwapiv1.GRPCBackendRef {
 	kind := gwapiv1.Kind("Service")
-	grpcBackEndRef := gwapiv1.GRPCBackendRef{
-		BackendRef: gwapiv1.BackendRef{
-			BackendObjectReference: gwapiv1.BackendObjectReference{
-				Kind: &kind,
-				Name: gwapiv1.ObjectName(endpoint.Name),
+	grpcBackEndRefs := []gwapiv1.GRPCBackendRef{}
+
+	for _, endpoint := range endpoints {
+		grpcBackEndRef := gwapiv1.GRPCBackendRef{
+			BackendRef: gwapiv1.BackendRef{
+				BackendObjectReference: gwapiv1.BackendObjectReference{
+					Kind: &kind,
+					Name: gwapiv1.ObjectName(endpoint.Name),
+				},
 			},
-		},
+		}
+		grpcBackEndRefs = append(grpcBackEndRefs, grpcBackEndRef)
 	}
-	return []gwapiv1.GRPCBackendRef{grpcBackEndRef}
+	return grpcBackEndRefs
 }
 
 // retrieveGRPCMatches retrieves the GRPCRouteMatches based on the provided configurations.

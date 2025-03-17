@@ -36,8 +36,10 @@ func TestGenerateGRPCRoute(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -67,7 +69,7 @@ func TestGenerateGRPCRoute(t *testing.T) {
 		Hostname:     "wso2-apim",
 	}
 	operations := *apkConf.Operations
-	endpoint := &types.EndpointDetails{Name: "employee-service"}
+	endpoint := &[]types.EndpointDetails{types.EndpointDetails{Name: "employee-service"}}
 	endpointType := "test-endpoint"
 	uniqueId := "test-id"
 	count := 1
@@ -92,8 +94,10 @@ func TestGenerateGRPCRouteRules(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -114,7 +118,7 @@ func TestGenerateGRPCRouteRules(t *testing.T) {
 		},
 	}
 	operations := *apkConf.Operations
-	endpoint := &types.EndpointDetails{Name: "employee-service"}
+	endpoint := &[]types.EndpointDetails{types.EndpointDetails{Name: "employee-service"}}
 	endpointType := "test-endpoint"
 
 	grpcRouteRules, err := g.generateGRPCRouteRules(apkConf, operations, endpoint, endpointType)
@@ -137,8 +141,10 @@ func TestGenerateGRPCRouteRule(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{
@@ -159,7 +165,7 @@ func TestGenerateGRPCRouteRule(t *testing.T) {
 		},
 	}
 	operation := (*apkConf.Operations)[0]
-	endpoint := &types.EndpointDetails{Name: "employee-service"}
+	endpoint := &[]types.EndpointDetails{types.EndpointDetails{Name: "employee-service"}}
 	endpointType := "test-endpoint"
 
 	grpcRouteRule, err := g.generateGRPCRouteRule(apkConf, operation, endpoint, endpointType)
@@ -193,7 +199,7 @@ func TestGenerateAndRetrieveParentRefs(t *testing.T) {
 
 func TestGenerateGRPCBackEndRef(t *testing.T) {
 	g := Generator()
-	endpoint := types.EndpointDetails{Name: "test-endpoint"}
+	endpoint := []types.EndpointDetails{{Name: "test-endpoint"}}
 	operation := types.Operation{}
 
 	grpcBackEndRefs := g.generateGRPCBackEndRef(endpoint, operation)
@@ -201,7 +207,7 @@ func TestGenerateGRPCBackEndRef(t *testing.T) {
 		t.Fatalf("Expected GRPCBackendRefs, got none")
 	}
 
-	expectedName := gwapiv1.ObjectName(endpoint.Name)
+	expectedName := gwapiv1.ObjectName(endpoint[0].Name)
 	if grpcBackEndRefs[0].BackendRef.Name != expectedName {
 		t.Errorf("Expected name %s, got %s", expectedName, grpcBackEndRefs[0].BackendRef.Name)
 	}
@@ -217,8 +223,10 @@ func TestRetrieveGRPCMatches(t *testing.T) {
 		DefaultVersion:         false,
 		SubscriptionValidation: false,
 		EndpointConfigurations: &types.EndpointConfigurations{
-			Production: &types.EndpointConfiguration{
-				Endpoint: types.EndpointURL("http://employee-service:8080"),
+			Production: &[]types.EndpointConfiguration{
+				types.EndpointConfiguration{
+					Endpoint: types.EndpointURL("http://employee-service:8080"),
+				},
 			},
 		},
 		RateLimit: &types.RateLimit{

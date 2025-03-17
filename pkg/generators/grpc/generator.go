@@ -29,13 +29,13 @@ import (
 
 // grpcRouteGenerator is the interface for the GRPC route generator.
 type grpcRouteGenerator struct {
-	GenerateGRPCRouteRules        func(apkConf types.APKConf, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string) ([]gwapiv1.GRPCRouteRule, error)
-	GenerateGRPCRouteRule         func(apkConf types.APKConf, operation types.Operation, endpoint *types.EndpointDetails, endpointType string) (*gwapiv1.GRPCRouteRule, error)
+	GenerateGRPCRouteRules        func(apkConf types.APKConf, operations []types.Operation, endpoint *[]types.EndpointDetails, endpointType string) ([]gwapiv1.GRPCRouteRule, error)
+	GenerateGRPCRouteRule         func(apkConf types.APKConf, operation types.Operation, endpoint *[]types.EndpointDetails, endpointType string) (*gwapiv1.GRPCRouteRule, error)
 	GenerateAndRetrieveParentRefs func(gatewayConfig types.GatewayConfigurations, uniqueId string) []gwapiv1.ParentReference
 	GetHostNames                  func(apkConf types.APKConf, endpointType string, organization types.Organization) []gwapiv1.Hostname
 	RetrieveGRPCMatches           func(operation types.Operation) []gwapiv1.GRPCRouteMatch
 	RetrieveGRPCMatch             func(operation types.Operation) gwapiv1.GRPCRouteMatch
-	GenerateGRPCBackEndRef        func(endpoint types.EndpointDetails, operation types.Operation) []gwapiv1.GRPCBackendRef
+	GenerateGRPCBackEndRef        func(endpoint []types.EndpointDetails, operation types.Operation) []gwapiv1.GRPCBackendRef
 }
 
 // Generator creates a new GRPC route generator.
@@ -52,7 +52,7 @@ func Generator() *grpcRouteGenerator {
 }
 
 // GenerateGRPCRoute generates a GRPCRoute based on the provided configurations.
-func (g *grpcRouteGenerator) GenerateGRPCRoute(apkConf types.APKConf, organization types.Organization, gatewayConfiguration types.GatewayConfigurations, operations []types.Operation, endpoint *types.EndpointDetails, endpointType string, uniqueId string, count int) (*gwapiv1.GRPCRoute, error) {
+func (g *grpcRouteGenerator) GenerateGRPCRoute(apkConf types.APKConf, organization types.Organization, gatewayConfiguration types.GatewayConfigurations, operations []types.Operation, endpoint *[]types.EndpointDetails, endpointType string, uniqueId string, count int) (*gwapiv1.GRPCRoute, error) {
 	grpcRouteRules, err := g.GenerateGRPCRouteRules(apkConf, operations, endpoint, endpointType)
 	if err != nil {
 		return nil, err
