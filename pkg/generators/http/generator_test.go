@@ -26,7 +26,6 @@ import (
 	"github.com/terance-edmonds/wso2-apk-k8s-go-lib/pkg/utils"
 
 	"github.com/stretchr/testify/assert"
-	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // TestGenerator test for Generator
@@ -83,6 +82,6 @@ func TestGenerator(t *testing.T) {
 		}
 
 		assert.Nil(t, err)
-		assert.IsType(t, &gwapiv1.HTTPRoute{}, httpRoute)
+		assert.IsType(t, &K8sArtifacts{}, httpRoute)
 	}
 }

@@ -262,7 +262,7 @@ func TestGenerateHTTPRouteFilters(t *testing.T) {
 			{Target: "/employee/{employeeId}", Verb: "DELETE", Secured: true, Scopes: []string{}},
 		},
 	}
-	endpointToUse := []types.EndpointDetails{}
+	endpointToUse := []types.EndpointDetails{{}}
 	operation := (*apkConf.Operations)[0]
 	endpointType := constants.PRODUCTION_TYPE
 	k8sArtifacts := K8sArtifacts{Name: apkConf.Name, Version: apkConf.Version, OrganizationID: "", Services: make(map[string]*v1.Service)}
